@@ -10,7 +10,7 @@
     let display = "none"
     let b_display = "none"
     let scroll_direction = ""
-    let scroll_anim = ""
+    let scroll_anim = false
 
     let bathroom = "Bathroom.png"
     let standard = "StandardRoom.png"
@@ -34,24 +34,28 @@
         action_icon = "🧼"
         display = "inline"
         b_display = "none"
+        scroll_anim = false
     } function Feed(){
         background = standard
         action_icon = "🍖"
         display = "none"
         b_display = "inline"
+        scroll_anim = false
     } function Sleep(){
         background = bedroom
         action_icon = "💤"
         display = "inline"
         b_display = "none"
+        scroll_anim = false
     } function Outside(){
-        const sprite = document.querySelector('.spritesheet.pixelart');
-        sprite.classList.add('sit');
+        //*const sprite = document.querySelector('.spritesheet.pixelart');
+        //*sprite.classList.add('sit');
 
         background = garden
         action_icon = "🦮"
         display = "inline"
         b_display = "none"
+        scroll_anim = false
     }
 
     function Action(){
@@ -64,9 +68,7 @@
         } 
         else if(background===garden){
             background = sidewalk
-
-            //*
-            scroll_anim = "scrollBackground 10s linear infinite"
+            scroll_anim = true
             scroll_direction = "repeat-x"
 
             energy -= 40
@@ -74,11 +76,12 @@
         } 
         else if(background===bedroom){
             /*
-            Background switches to darkmode
+            Background switch darkmode
             Animation -> Sleep
             Snoring
             Timer
             */
+            energy += 50
             wakefullness = 100
         }
     }
@@ -87,6 +90,7 @@
     let all_moods = ["hunger","cleanliness","energy","wakefullness"];
     const getRandomIndex = (arr) => Math.floor(Math.random() * arr.length);
 
+    
     function drainMood(){
         let mood = all_moods[getRandomIndex(all_moods)];
 
@@ -109,15 +113,21 @@
     }
     drainMood()
     
-    /*
+    let interval
     function BondingTimer(){
         let mood_tot = (hunger + cleanliness + energy + wakefullness) / 4;
 
-        setInterval(()=>{ 
-            bonding += 1
-        }, 5000);
+        if (mood_tot>50 && !interval){
+            interval = setInterval(()=>{ 
+                bonding += 1
+            }, 5000);
+        }else if(mood_tot<50 && interval){
+            clearInterval(interval)
+            interval = undefined
+        }
     }
-    BondingTimer() */
+    setInterval(()=>BondingTimer(),1000 )
+    
 
 </script>
 
@@ -128,41 +138,50 @@
             <img id="heart" src="Heart.png" alt="">
             <label for="heart" id="level">{bonding}x</label>
         </form> 
-
-        <div class="pet-container" style="background-image: url({background}); background-size: 100%; background-repeat:{scroll_direction}; animation:{scroll_anim};">
-            <div class="petspace">
-                <label for="pet" id="nameplate">{new_name}🐾</label>
-                <div id="pet">
-                    <img class="spritesheet pixelart" src={skin} alt="Pet">
+        <section class="inside_container">
+            <div class="pet-container" style="background-image: url({background});" class:scroll_back={scroll_anim}>
+                <div class="petspace">
+                    <label for="pet" id="nameplate">{new_name}🐾</label>
+                    <div id="pet">
+                        <img class="spritesheet pixelart" src={skin} alt="Pet">
+                    </div>
                 </div>
-            </div>
-            <img id="bowl" class="pixelart" src="BowlFull.png" alt="" style="display:{b_display};">
-        </div>
-
-        <div class="stats">
-            <div>
-                <button class="interact" on:click={()=>Feed()}>🍽️</button>
-                <progress id="hunger" value="{hunger}" max="100" min="0"></progress>
-            </div>
-            <div>
-                <button class="interact" on:click={()=>Clean()}>🛁</button>
-                <progress id="cleanliness" value="{cleanliness}" max="100" min="0"></progress>
-            </div>
-            <div>
-                <button class="interact" on:click={()=>Outside()}>⚡</button>
-                <progress id="energy" value="{energy}" max="100" min="0"></progress>
-            </div>
-            <div>
-                <button class="interact" on:click={()=>Sleep()}>🌘</button>
-                <progress id="wakefullness" value="{wakefullness}" max="100" min="0"></progress>
+                <img id="bowl" class="pixelart" src="BowlFull.png" alt="" style="display:{b_display};">
             </div>
 
-            <button class="interact" id="action" style="display: {display};" on:click={()=>Action()}>{action_icon}</button>
-        </div>
+            <div class="stats">
+                <div>
+                    <button class="interact" on:click={()=>Feed()}>🍽️</button>
+                    <progress id="hunger" value="{hunger}" max="100" min="0"></progress>
+                </div>
+                <div>
+                    <button class="interact" on:click={()=>Clean()}>🛁</button>
+                    <progress id="cleanliness" value="{cleanliness}" max="100" min="0"></progress>
+                </div>
+                <div>
+                    <button class="interact" on:click={()=>Outside()}>⚡</button>
+                    <progress id="energy" value="{energy}" max="100" min="0"></progress>
+                </div>
+                <div>
+                    <button class="interact" on:click={()=>Sleep()}>🌘</button>
+                    <progress id="wakefullness" value="{wakefullness}" max="100" min="0"></progress>
+                </div>
+
+                <button class="interact" id="action" style="display: {display};" on:click={()=>Action()}>{action_icon}</button>
+            </div>
+        </section>
     </div>
 </main>
 
 <style>
+    .inside_container{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+        position: relative;
+        gap:1em;
+    }
+
     img{
         justify-self: center;
     }
@@ -184,7 +203,7 @@
     }
     .background{
         background-color: rgb(118, 188, 213);
-        background-size: cover;
+        background-size:cover;
         width: 100%;
         height: 100%;
         margin:auto;
@@ -221,6 +240,9 @@
         padding: 5px;
         margin-left: 50px;
 
+        background-size: cover;
+        
+
         border-color:rgb(44, 59, 76);
         border-style: solid;
         border-width: 10px;
@@ -232,6 +254,11 @@
         to {
             background-position: -2000px 0;
         }
+    }
+
+    .scroll_back{
+        animation: scrollBackground 10s linear infinite;
+        background-repeat :repeat-x;
     }
     .namecontainer{
         width: 30%;
@@ -247,16 +274,23 @@
         margin: top 5px;
     }
     .stats{
-        position: absolute;
-        left: 720px;
-        top: 220px;
-
-        display:flex;
-        flex-direction: column;
+        display:grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(1fr,4);
         gap:20px;
+        width: 100%;
+    }
+
+    .stats div {
+        width: 100%;
+        display: flex;
+        align-items: center;
+
+    }
+    .stats div progress{
+        width: 80%;
     }
     .interact{
-        position: relative;
         height: 80px;
         width: 80px;
         font-size: 40px;
