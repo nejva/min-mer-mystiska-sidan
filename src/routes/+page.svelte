@@ -8,89 +8,133 @@
 
     let action_icon = ""
     let display = "none"
-    let b_display = "none"
+    let bowl_display = "inline"
+    let soap_display = "none"
+    let leash_display = "none"
+    let lamp_display = "none"
     let scroll_direction = ""
     let scroll_anim = false
+    let brightness = 1
 
     let bathroom = "Bathroom.png"
     let standard = "StandardRoom.png"
     let garden = "Backyard2.png"
     let bedroom = "Bedroom.png"
     let sidewalk = "Sidewalk.png"
+    let big_background = "Cloudedsky.png"
 
     let petname = "🐾 Rename..."
     let skin = "Goldie_v02.png"
     let background = standard
 
-    /*  ----------------------------------------------------------------------  */ 
+    let sit = false
+    let walk = false
+    let sleep = false
+
 
     let new_name;
     function Rename(){
         new_name = petname
     }
 
+    // Byter rum och visar den action-knapp som passar till rummet.
     function Clean(){
         background = bathroom
+        big_background = "Cloudedsky.png"
         action_icon = "🧼"
-        display = "inline"
-        b_display = "none"
+        soap_display = "inline"
+        bowl_display = "none"
+        leash_display = "none"
+        lamp_display = "none"
         scroll_anim = false
+
+        walk = false
+        sleep = false
+        sit = false
     } function Feed(){
         background = standard
-        action_icon = "🍖"
-        display = "none"
-        b_display = "inline"
+        big_background = "Cloudedsky.png"
+        soap_display = "none"
+        bowl_display = "inline"
+        leash_display = "none"
+        lamp_display = "none"
         scroll_anim = false
+
+        walk = false
+        sleep = false
+        sit = true
     } function Sleep(){
         background = bedroom
+        big_background = "Cloudedsky.png"
         action_icon = "💤"
-        display = "inline"
-        b_display = "none"
+        soap_display = "none"
+        bowl_display = "none"
+        leash_display = "none"
+        lamp_display = "inline"
+        brightness = 1
+
         scroll_anim = false
-    } function Outside(){
-        //*const sprite = document.querySelector('.spritesheet.pixelart');
-        //*sprite.classList.add('sit');
+        walk = false
+        sit = false
+        sleep = false
+    } function Backyard(){
+        //const sprite = document.querySelector('.spritesheet.pixelart');
+        //sprite.classList.add('sit');
 
         background = garden
+        big_background = "Cloudedsky.png"
         action_icon = "🦮"
-        display = "inline"
-        b_display = "none"
+        soap_display = "none"
+        bowl_display = "none"
+        lamp_display = "none"
+        leash_display = "inline"
         scroll_anim = false
+
+        walk = false
+        sleep = false
+        sit = false
     }
 
+    // Boostar mood som hör till respektive rum/action samt triggar ev. övriga specialattribut.
     function Action(){
         if (background===bathroom){
-            cleanliness += 40
+            cleanliness += 20
         } 
         else if(background===standard){
-            b_display = "inline"
-            hunger += 40
+            bowl_display = "inline"
+            hunger += 20
         } 
         else if(background===garden){
             background = sidewalk
+            leash_display = "none"
             scroll_anim = true
             scroll_direction = "repeat-x"
+            walk = true
 
-            energy -= 40
-            wakefullness -= 10
+            energy += 60
+            wakefullness -= 20
         } 
         else if(background===bedroom){
             /*
-            Background switch darkmode
-            Animation -> Sleep
             Snoring
             Timer
             */
+            sleep = true
+            sit = true
+            background = "Bedroom-night.png"
+            big_background = "Cloudedsky-night.png"
+            brightness = 0.5
+
             energy += 50
             wakefullness = 100
         }
     }
 
-    /* https://www.geeksforgeeks.org/javascript/how-to-select-a-random-element-from-array-in-javascript/ */
+    // https://www.geeksforgeeks.org/javascript/how-to-select-a-random-element-from-array-in-javascript/
     let all_moods = ["hunger","cleanliness","energy","wakefullness"];
     const getRandomIndex = (arr) => Math.floor(Math.random() * arr.length);
 
-    
+    // Använder det slumpade indexet ur listan(se r.92-93) för att välja ett statusvärde att sänka.
     function drainMood(){
         let mood = all_moods[getRandomIndex(all_moods)];
 
@@ -102,36 +146,41 @@
             if (mood === "hunger" && hunger > 0)
                 hunger -= 15;
             if (mood === "cleanliness" && cleanliness > 0)
-                cleanliness -= 15;
-            if (mood === "energy" && energy < 100)
-                energy += 15;
+                cleanliness -= 12;
+            if (mood === "energy" && energy > 0)
+                energy -= 10;
             if (mood === "wakefullness" && wakefullness > 0)
-                wakefullness -= 10;
+                wakefullness -= 8;
 
             drainMood();
         }, r_time);
     }
     drainMood()
     
-    let interval
+    /* 
+    Belönar spelaren med bonding-poäng om den lyckas hålla djurets genomsnittliga "mood" över hälften under en period.
+    Blir djuret olyckligt ges inga fler bonding-poäng ut tills spelaren tagit hand om djuret.
+
+    Är djurets "mood"-genomsnitt högre än hälften kommer intervallen ge poäng efter tiden gått, sedan starta om. Sjunker genomsnittet clearas intervallet.
+    */
+    let interval;
     function BondingTimer(){
         let mood_tot = (hunger + cleanliness + energy + wakefullness) / 4;
 
         if (mood_tot>50 && !interval){
             interval = setInterval(()=>{ 
                 bonding += 1
-            }, 5000);
+            }, 20000);
         }else if(mood_tot<50 && interval){
             clearInterval(interval)
             interval = undefined
         }
     }
-    setInterval(()=>BondingTimer(),1000 )
-    
+    setInterval(()=>BondingTimer(),1000)
 
 </script>
 
-<main class="background">
+<main class="background scroll_back" style="background-image: url({big_background});">
     <div class="container">
         <form on:submit|preventDefault={Rename}>
             <input class="namecontainer" type="text"  id="petname" minlength="2" maxlength="35" placeholder={petname} bind:value={petname}/>
@@ -143,10 +192,13 @@
                 <div class="petspace">
                     <label for="pet" id="nameplate">{new_name}🐾</label>
                     <div id="pet">
-                        <img class="spritesheet pixelart" src={skin} alt="Pet">
+                        <img class="spritesheet pixelart" class:sitting={sit} class:walking={walk} class:sleeping={sleep} src={skin} alt="Pet">
                     </div>
+                    <img class="action pixelart" src="BowlFull.png" alt="" style="display:{bowl_display};" on:click={()=>Action()}>
+                    <img class="action pixelart" src="Soap2.png" alt="" style="display:{soap_display};" on:click={()=>Action()}>
+                    <img class="action pixelart" src="Leash.png" alt="" style="display:{leash_display};" on:click={()=>Action()}>
+                    <img class="action pixelart" id="lamp" src="Lamp.png" alt="" style="display:{lamp_display}; filter: brightness({brightness})" on:click={()=>Action()}>
                 </div>
-                <img id="bowl" class="pixelart" src="BowlFull.png" alt="" style="display:{b_display};">
             </div>
 
             <div class="stats">
@@ -159,15 +211,13 @@
                     <progress id="cleanliness" value="{cleanliness}" max="100" min="0"></progress>
                 </div>
                 <div>
-                    <button class="interact" on:click={()=>Outside()}>⚡</button>
+                    <button class="interact" on:click={()=>Backyard()}>🥎</button>
                     <progress id="energy" value="{energy}" max="100" min="0"></progress>
                 </div>
                 <div>
                     <button class="interact" on:click={()=>Sleep()}>🌘</button>
                     <progress id="wakefullness" value="{wakefullness}" max="100" min="0"></progress>
                 </div>
-
-                <button class="interact" id="action" style="display: {display};" on:click={()=>Action()}>{action_icon}</button>
             </div>
         </section>
     </div>
@@ -181,7 +231,6 @@
         position: relative;
         gap:1em;
     }
-
     img{
         justify-self: center;
     }
@@ -192,6 +241,9 @@
         border: solid 5px gray;
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         z-index: 1;
+    }
+    button:hover{
+        transform: scale(1.25);
     }
     progress{
         height: 50px;
@@ -249,13 +301,12 @@
     }
     @keyframes scrollBackground {
         from {
-            background-position: 0 0;
-        }
-        to {
             background-position: -2000px 0;
         }
+        to {
+            background-position: 0 0;
+        }
     }
-
     .scroll_back{
         animation: scrollBackground 10s linear infinite;
         background-repeat :repeat-x;
@@ -268,7 +319,7 @@
         border-radius: 10px;
         background-image: url("paper.jpg");
         background-size: 100%;
-        border: solid 4px rgb(107, 101, 92);
+        border: solid 4px rgb(181, 180, 179);
         font-size: large;
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         margin: top 5px;
@@ -280,12 +331,10 @@
         gap:20px;
         width: 100%;
     }
-
     .stats div {
         width: 100%;
         display: flex;
         align-items: center;
-
     }
     .stats div progress{
         width: 80%;
@@ -294,12 +343,16 @@
         height: 80px;
         width: 80px;
         font-size: 40px;
-        
+        border: solid 5px white;
+        background-color: rgb(225, 225, 225);
     }
     .petspace{
-        display:flex;
-        flex-direction: column;
-        align-items: center;
+        display:grid;
+        grid-template-columns: auto auto;
+        grid-template-rows: auto 1fr;
+        justify-content: center;
+        align-items: end;
+        height: 100%;
     }
     /*
     Source - https://stackoverflow.com/a/18368275
@@ -347,24 +400,22 @@
     #wakefullness[value]{
         background: rgb(134, 22, 132);
     }
-    #action{
-        height: 100px;
-        width: 100px;
-        bottom: 250px;
-        right: 560px;
-        font-size: 55px;
-    }
-    #bowl{
+    .action{
+        grid-column: 2;
+        grid-row: 2;
+        align-self: end;
         height:90px;
-        position:relative;
-        bottom: -60px;
-        left: 330px;
-        
+    }
+    .action:hover{
+        transform: scale(1.25);
     }
     #heart{
         height:40px;
         position: relative;
         top:15px;
+    }
+    #heart:hover{
+        transform: scale(1.25);
     }
     #level{
         position: relative;
@@ -372,21 +423,26 @@
         font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     }
     #nameplate{
-        position: relative;
-        top: 200px;
         font-size: 30px;
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         font-weight: bold;
         border-bottom: 1px black solid;
-    }
+        
+        grid-column: 1;
+        grid-row: 2;
+        align-self: center;
+        justify-self: center;
+        margin-bottom: 90px;
 
-    /* https://www.youtube.com/watch?v=ekI7vjkFrGA */
+    }
     #pet{
         width: 204px;
         height: 252px;
         overflow: hidden;
-        position:relative;
-        bottom: -190px;
+        position: relative;
+        grid-column: 1;
+        grid-row: 2;
+        align-self: end;
     }
     @keyframes moveSpritesheet{
         from{
@@ -406,10 +462,16 @@
     .pixelart{
         image-rendering: pixelated;
     }
-    .sit{
+    .sitting{
         top: -504px;
     }
-    .walk{
+    .walking{
         top: -1764px;
+    }
+    .sleeping{
+        filter: brightness(0.5)
+    }
+    #lamp{
+        height: 225px;
     }
 </style>
