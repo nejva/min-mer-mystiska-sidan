@@ -27,21 +27,42 @@
     let skin = "Goldie_v02.png"
     let background = standard
 
-    let sit = false
+    let sit = true
     let walk = false
     let sleep = false
 
-
+    // Tar användarens input och sparar det som nytt namn.
     let new_name;
     function Rename(){
         new_name = petname
+    }
+
+    // Ljudeffekter
+    let interact_audio;
+    function audioInteract(){
+        interact_audio.currentTime = 0;
+        interact_audio.play();
+    }
+    let levelup_audio;
+    function audioLevelUp(){
+        levelup_audio.currentTime = 0;
+        levelup_audio.play();
+    }
+    let lamp_audio;
+    function audioLamp(){
+        lamp_audio.currentTime = 0;
+        lamp_audio.play();
+    }
+    let soap_audio;
+    function audioSoap(){
+        soap_audio.currentTime = 0;
+        soap_audio.play();
     }
 
     // Byter rum och visar den action-knapp som passar till rummet.
     function Clean(){
         background = bathroom
         big_background = "Cloudedsky.png"
-        action_icon = "🧼"
         soap_display = "inline"
         bowl_display = "none"
         leash_display = "none"
@@ -66,24 +87,19 @@
     } function Sleep(){
         background = bedroom
         big_background = "Cloudedsky.png"
-        action_icon = "💤"
         soap_display = "none"
         bowl_display = "none"
         leash_display = "none"
         lamp_display = "inline"
         brightness = 1
-
         scroll_anim = false
+
         walk = false
         sit = false
         sleep = false
     } function Backyard(){
-        //const sprite = document.querySelector('.spritesheet.pixelart');
-        //sprite.classList.add('sit');
-
         background = garden
         big_background = "Cloudedsky.png"
-        action_icon = "🦮"
         soap_display = "none"
         bowl_display = "none"
         lamp_display = "none"
@@ -170,6 +186,7 @@
         if (mood_tot>50 && !interval){
             interval = setInterval(()=>{ 
                 bonding += 1
+                // audioLevelUp() <-- Spelet blir för segt
             }, 20000);
         }else if(mood_tot<50 && interval){
             clearInterval(interval)
@@ -194,28 +211,33 @@
                     <div id="pet">
                         <img class="spritesheet pixelart" class:sitting={sit} class:walking={walk} class:sleeping={sleep} src={skin} alt="Pet">
                     </div>
-                    <img class="action pixelart" src="BowlFull.png" alt="" style="display:{bowl_display};" on:click={()=>Action()}>
-                    <img class="action pixelart" src="Soap2.png" alt="" style="display:{soap_display};" on:click={()=>Action()}>
-                    <img class="action pixelart" src="Leash.png" alt="" style="display:{leash_display};" on:click={()=>Action()}>
-                    <img class="action pixelart" id="lamp" src="Lamp.png" alt="" style="display:{lamp_display}; filter: brightness({brightness})" on:click={()=>Action()}>
+                    <img class="action pixelart" src="BowlFull.png" alt="" style="display:{bowl_display};" on:click={()=>Action()} on:click={()=>audioInteract()}>
+                    <img class="action pixelart" src="Soap2.png" alt="" style="display:{soap_display};" on:click={()=>Action()} on:click={()=>audioSoap()}>
+                    <img class="action pixelart" src="Leash.png" alt="" style="display:{leash_display};" on:click={()=>Action()} on:click={()=>audioInteract()}>
+                    <img class="action pixelart" id="lamp" src="Lamp.png" alt="" style="display:{lamp_display}; filter: brightness({brightness})" on:click={()=>Action()} on:click={()=>audioLamp()}>
+                    
+                    <audio bind:this={interact_audio} src="spinopel-blow-to-a-fragile-object-456376.mp3"></audio>
+                    <audio bind:this={lamp_audio} src="freesound_community-desk-lamp-switch-101351.mp3"></audio>
+                    <audio bind:this={soap_audio} src="freesound_community-soap-bubbles-pop-96873.mp3"></audio>
+                    <audio bind:this={levelup_audio} src="floraphonic-cute-level-up-3-189853.mp3"></audio>
                 </div>
             </div>
 
             <div class="stats">
                 <div>
-                    <button class="interact" on:click={()=>Feed()}>🍽️</button>
+                    <button class="interact" on:click={()=>Feed()} on:click={()=>audioInteract()}>🍽️</button>
                     <progress id="hunger" value="{hunger}" max="100" min="0"></progress>
                 </div>
                 <div>
-                    <button class="interact" on:click={()=>Clean()}>🛁</button>
+                    <button class="interact" on:click={()=>Clean()} on:click={()=>audioInteract()}>🛁</button>
                     <progress id="cleanliness" value="{cleanliness}" max="100" min="0"></progress>
                 </div>
                 <div>
-                    <button class="interact" on:click={()=>Backyard()}>🥎</button>
+                    <button class="interact" on:click={()=>Backyard()} on:click={()=>audioInteract()}>🥎</button>
                     <progress id="energy" value="{energy}" max="100" min="0"></progress>
                 </div>
                 <div>
-                    <button class="interact" on:click={()=>Sleep()}>🌘</button>
+                    <button class="interact" on:click={()=>Sleep()} on:click={()=>audioInteract()}>🌘</button>
                     <progress id="wakefullness" value="{wakefullness}" max="100" min="0"></progress>
                 </div>
             </div>
@@ -473,5 +495,8 @@
     }
     #lamp{
         height: 225px;
+    }
+    audio{
+        display:none;
     }
 </style>
