@@ -31,6 +31,9 @@
     let walk = false
     let sleep = false
 
+    // OBS: Har sänkt tiden för bonding och höjt värdet på hur mycket statusvärdena sänks
+    // -> för att det ska vara lättare att se hur det fungerar.
+
     // Tar användarens input och sparar det som nytt namn.
     let new_name;
     function Rename(){
@@ -131,10 +134,6 @@
             wakefullness -= 20
         } 
         else if(background===bedroom){
-            /*
-            Snoring
-            Timer
-            */
             sleep = true
             sit = true
             background = "Bedroom-night.png"
@@ -160,13 +159,13 @@
         
         setTimeout(()=>{
             if (mood === "hunger" && hunger > 0)
-                hunger -= 15;
+                hunger -= 35;
             if (mood === "cleanliness" && cleanliness > 0)
-                cleanliness -= 12;
+                cleanliness -= 32;
             if (mood === "energy" && energy > 0)
-                energy -= 10;
+                energy -= 30;
             if (mood === "wakefullness" && wakefullness > 0)
-                wakefullness -= 8;
+                wakefullness -= 18;
 
             drainMood();
         }, r_time);
